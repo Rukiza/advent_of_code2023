@@ -1,5 +1,90 @@
-@main def hello: Unit =
-  println("Hello world!")
-  println(msg)
+import scala.io.Source
+import scala.util.FromDigits
+import scala.collection.mutable.ArrayBuffer
+import scala.util.boundary, boundary.break
 
-def msg = "I was compiled by Scala 3. :)"
+
+@main def parse(input: String): Unit = {
+
+  val map: Map[String, Int] = Map("blue" -> 14, "red" -> 12, "green" -> 13)
+  // val count: Int = 
+  println("input file: "+input)
+
+  val path: os.Path = os.pwd / input
+  val lines: Seq[String] = os.read.lines(path)
+  val count: Int = lines
+    .map(parseLine(map, _))
+    .reduce(_ + _)
+
+  println("Count: " + count)
+}
+
+def parseLine(map: Map[String, Int], line: String): Int = {
+
+  var (gameNumber, index) = parseStart(line)
+
+  val gameList: List[Map[String, Int]] = parseGameLine(line.substring(index))
+
+  boundary:
+    for gameMap <- gameList
+      (key, value) <- gameMap do {
+        // println(s"key: ${key}, value: ${value}")
+        if (!map.contains(key)) {
+            // println("Key not found")
+            break(0)
+        }
+        if ((map.get(key) match {
+            case None => 0
+            case Some(v) => v
+          }) < value) {
+            // println("Key less than value")
+            break(0)
+        }
+    }
+    gameNumber
+
+  
+}
+
+def parseStart(line: String): (Int, Int) = {
+
+  val end: Int = line.indexOf(':')
+  val start: Int = 5
+
+  var digit: String = ""
+  for i <- start to end - 1 do {
+    if (line(i).isDigit) {
+      digit += line(i)
+    }
+  }
+
+  (digit.toInt, end + 1)
+
+}
+
+def parseGameLine(line: String): List[Map[String, Int]] = {
+
+  // var gameMap: Map[String, Int] = Map()
+  // println("game line: "+line)
+  
+  val phases: Array[String] = line.split(";").map(_.trim)
+
+  var array: ArrayBuffer[Map[String, Int]] = ArrayBuffer[Map[String, Int]]()
+
+  for phase <- phases do {
+    array.addOne(phase.split(",")
+      .map(processTuple(_))
+      .toMap)
+  }
+
+  array.toList
+}
+
+
+def processTuple(token: String): (String, Int) = {
+  val splitToken: Array[String] = token.trim
+    .split(" ")
+
+  (splitToken(1), splitToken(0).toInt)
+}
+
