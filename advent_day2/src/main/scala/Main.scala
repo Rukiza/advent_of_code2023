@@ -6,44 +6,44 @@ import scala.util.boundary, boundary.break
 
 @main def parse(input: String): Unit = {
 
-  val map: Map[String, Int] = Map("blue" -> 14, "red" -> 12, "green" -> 13)
+  // val map: Map[String, Int] = Map("blue" -> 14, "red" -> 12, "green" -> 13)
   // val count: Int = 
   println("input file: "+input)
 
   val path: os.Path = os.pwd / input
   val lines: Seq[String] = os.read.lines(path)
   val count: Int = lines
-    .map(parseLine(map, _))
+    .map(parseLine(_))
     .reduce(_ + _)
 
-  println("Count: " + count)
+    println("Count: " + count)
 }
 
-def parseLine(map: Map[String, Int], line: String): Int = {
+def parseLine(line: String): Int = {
 
   var (gameNumber, index) = parseStart(line)
 
   val gameList: List[Map[String, Int]] = parseGameLine(line.substring(index))
 
-  boundary:
-    for gameMap <- gameList
-      (key, value) <- gameMap do {
-        // println(s"key: ${key}, value: ${value}")
-        if (!map.contains(key)) {
-            // println("Key not found")
-            break(0)
-        }
-        if ((map.get(key) match {
-            case None => 0
-            case Some(v) => v
-          }) < value) {
-            // println("Key less than value")
-            break(0)
-        }
-    }
-    gameNumber
+  var map: scala.collection.mutable.Map[String, Int] = 
+    scala.collection.mutable.Map("blue" -> 0, "red" -> 0, "green" -> 0)
 
-  
+  for gameMap <- gameList
+    (key, value) <- gameMap do {
+    // println(s"key: ${key}, value: ${value}")
+    if (!map.contains(key)) {
+      // println("Key not found")
+    }
+    if ((map.get(key) match {
+      case None => 0
+      case Some(v) => v
+      }) < value) {
+        map.addOne(key, value)
+      }
+  }
+
+  map.values.reduce(_ * _)
+
 }
 
 def parseStart(line: String): (Int, Int) = {
