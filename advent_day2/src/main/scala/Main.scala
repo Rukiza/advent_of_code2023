@@ -1,5 +1,3 @@
-import scala.io.Source
-import scala.util.FromDigits
 import scala.collection.mutable.ArrayBuffer
 import scala.util.boundary, boundary.break
 
@@ -64,9 +62,6 @@ def parseStart(line: String): (Int, Int) = {
 
 def parseGameLine(line: String): List[Map[String, Int]] = {
 
-  // var gameMap: Map[String, Int] = Map()
-  // println("game line: "+line)
-  
   val phases: Array[String] = line.split(";").map(_.trim)
 
   var array: ArrayBuffer[Map[String, Int]] = ArrayBuffer[Map[String, Int]]()
