@@ -1,5 +1,6 @@
-@main def hello: Unit =
-  println("Hello world!")
-  println(msg)
 
-def msg = "I was compiled by Scala 3. :)"
+
+@main def parse(input: String): Unit = {
+  val path: os.Path = os.pwd / input
+  val lines: Seq[String] = os.read.lines(path)
+}
