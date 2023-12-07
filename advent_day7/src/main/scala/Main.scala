@@ -25,7 +25,7 @@ val map: Map[Card, Int] = Map(
   )
 
 enum Card {
-  case One, Two, Three, Four, Five, Six, Seven, Eight, Nine, Ten, Prince, Queen, King, Ace
+  case Prince, One, Two, Three, Four, Five, Six, Seven, Eight, Nine, Ten, Queen, King, Ace
 }
 
 enum HandType { 
@@ -34,7 +34,7 @@ enum HandType {
 
 object Hand {
   def create(c1: Card, c2: Card, c3: Card, c4: Card, c5: Card, bid: Int): Hand = {
-    val temp: Map[Card, Int] = map.clone
+    var temp: Map[Card, Int] = map.clone
     val list = List(c1, c2, c3, c4, c5)
 
     list.map(x => temp.get(x) match {
@@ -45,7 +45,22 @@ object Hand {
       }
     })
 
-    val x = temp.values.toList.filterNot(v => v == 0)
+    
+    temp.get(Card.Prince) match {
+      case None => ()
+      case Some(v) => {
+        var v1 = (Card.Prince, 0)
+        temp.remove(Card.Prince)
+        for v2 <- temp do { 
+          if (v2(1) > v1(1)) {
+            v1 = v2
+          }
+        }
+        temp.addOne((v1(0), v1(1)+v))
+      }
+    }
+    
+    var x = temp.values.toList.filterNot(v => v == 0)
     Hand( 
     {
       if (x.length == 1) {HandType.FiveOfAKind}
@@ -76,7 +91,7 @@ object Hand {
   }
 }
 
-case class Hand(h: HandType, c1: Card, c2: Card, c3: Card, c4: Card, c5: Card, bet: Int)
+case class Hand(h: HandType, c1: Card, c2: Card, c3: Card, c4: Card, c5: Card, bid: Int)
 
 def parseCards(lines: Seq[String]): Long = {
   var array: ArrayBuffer[Hand] = ArrayBuffer()
@@ -89,7 +104,7 @@ def parseCards(lines: Seq[String]): Long = {
   array = array.sortWith((h1, h2) => Hand.greater(h1,h2))
   var total = 0
   for i <- 0 to array.length - 1 do {
-    total += array(i).bet * (array.length - i)
+    total += array(i).bid * (array.length - i)
   }
   array.map(println(_))
   total
