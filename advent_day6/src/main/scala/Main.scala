@@ -7,34 +7,29 @@ import scala.collection.mutable.Map
   println(parseLines(lines))
 }
 
-def parseLines(lines: Seq[String]): Int = {
-  val times: List[Int] = parseString(lines, 0)
-  val distances: List[Int] = parseString(lines, 1)
+def parseLines(lines: Seq[String]): Long = {
+  val times: Long = parseString(lines, 0)
+  val distances: Long = parseString(lines, 1)
 
   println(times)
   println(distances)
-  var total = 1
-  for i <- 0 to times.length - 1 do {
-    var sum = 0
-    for t <- 0 to times(i) - 1 do {
-      if (t * (times(i) - t) > distances(i)) {
-        sum += 1
-      }
+  var total: Long = 1
+  var sum: Long = 0
+  for t <- 0L to times - 1 do {
+    if (t * (times - t) > distances) {
+      sum += 1
     }
-    println(sum)
-    total = total * sum
   }
+  total = total * sum
   total
 }
 
-def parseString(lines: Seq[String], index: Int): List[Int] = {
-  val parsed: List[Int] = lines(index)
+def parseString(lines: Seq[String], index: Int): Long = {
+  val parsed: Long = lines(index)
     .split(':')(1)
     .split(' ')
     .filterNot(_ == "")
-    .map(_.toInt)
-    .toList
-
+    .foldLeft("")((a,b) => s"${a}${b}").toLong
   parsed
 }
 
