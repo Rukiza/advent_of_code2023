@@ -34,10 +34,3 @@ def parseString(lines: Seq[String], index: Int): Long = {
 }
 
 
-// Understanding.. 
-// min is 
-// T D 
-// floor(D / T) + 1 recuse until D / T grather than Prev floor(D/T) + 1
-//
-//
-
