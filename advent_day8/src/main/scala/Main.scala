@@ -12,7 +12,8 @@ case class Node(left: String, right: String)
 
 // var network: Map[String, Node] = Map()
 
-def parseLines(lines: Seq[String]): Int = {
+
+def parseLines(lines: Seq[String]): BigInt = {
   val path: List[Char] = lines(0)
     .split("")
     .flatMap(x => x.toCharArray).toList
@@ -21,34 +22,48 @@ def parseLines(lines: Seq[String]): Int = {
 
   val network = parseNodes(nodeLines)
 
-  val steps: ArrayBuffer[String] = ArrayBuffer("AAA")
+  network
+    .keys
+    .filter(s => s.matches("..A"))
+    .to(ArrayBuffer)
+    .map(x => run(x, network, path))
+    .foldLeft(1:BigInt)({
+      (a,b) => b*a / Stream.iterate((a,b)){case (x,y) => (y, x%y)}.dropWhile(_._2 != 0).head._1.abs // Not my code.. works good though. 
+    })
+}
 
+def run(start: String, network: Map[String, Node], path: List[Char]): BigInt = {
+  var counter = BigInt(0)
   var i: Int = 0
+  var current = start
   boundary:
     while (i <= path.length) do {
       if (i >= path.length) {
         i = 0 // We go round again 
       }
-      // if (steps.length < 4) {
-      //   println(steps)
-      //   println(i)
-      //   println(path)
-      // }
-      val node = network.get(steps.last) match {
-        case None => Node("", "") // Should never get here.
+      val node = network.get(current) match {
+        case None => {
+          println("here")
+          Node("", "")
+        } // Should never get here.
         case Some(v) => v
       }
       path(i) match {
-        case 'L' => steps.addOne(node.left)
-        case 'R' => steps.addOne(node.right)
+        case 'L' => current = node.left
+        case 'R' => current = node.right
       }
-      if (steps.last == "ZZZ") {
+      counter += 1
+      // if (steps.filter(_.matches("..Z")).length == steps.length) {
+      // println(steps)
+      // break(())
+      // }
+      if (current.last == 'Z') {
         break(())
       }
       i += 1
     }
 
-  steps.length - 1
+  counter
 }
 
 def parseNodes(nodeLines: Seq[String]): Map[String, Node] = {
