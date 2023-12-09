@@ -18,7 +18,9 @@ def parseLines(lines: Seq[String]): BigInt = {
     list.addOne(p)
   }
 
-  list.map(_.calcNext).reduce(_ + _)
+  val n = list.map(_.calcNext).reduce(_ + _)
+
+  n 
 }
 
 class Pyramid {
@@ -42,16 +44,14 @@ class Pyramid {
 
   private def calcNext(level: Int): BigInt = {
     if (level == layers.length - 1) {
-      if (layers(level).last != 0) {
-        println(layers(level))
-      }
       layers(level).addOne(0)
       0
     }
     else {
       val dif = calcNext(level + 1)
-      layers(level).addOne(dif + layers(level)(layers(level).length - 1))
-      layers(level)(layers(level).length - 1)
+      val value = dif + layers(level).last
+      layers(level).addOne(value)
+      value
     }
   }
 
@@ -60,11 +60,11 @@ class Pyramid {
       layers.addOne(ArrayBuffer())
     }
 
-    val dif: BigInt =  layers(level-1)(layers(level).length+1) - layers(level-1)(layers(level).length)
+    val dif: BigInt =  layers(level-1)(layers(level-1).length-1) - layers(level-1)(layers(level-1).length-2)
 
     layers(level).addOne(dif)
 
-    if (dif != 0 && layers(level).length != 1) {
+    if (layers(level).filter(_ != 0).length != 0 && layers(level).length != 1) {
       calcLevel(level+1)
     }
   }
