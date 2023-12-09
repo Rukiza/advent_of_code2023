@@ -35,5 +35,10 @@ class MySuite extends munit.FunSuite {
     assert(parseLines(lines) ==  -49) 
   }
 
+  test("test line 1 first") {
+    val lines = Seq("14 16 18 20 22 24 26 28 30 32 34 36 38 40 42 44 46 48 50 52 54")
+    assert(parseLines2(lines) ==  12) 
+  }
+
   
 }
