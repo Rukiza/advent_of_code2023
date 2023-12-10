@@ -5,7 +5,7 @@ import scala.collection.mutable
 @main def parse(input: String): Unit = {
   val path: os.Path = os.pwd / input
   val lines: Seq[String] = os.read.lines(path)
-  println(parseLines2(lines))
+  println(parseLines(lines))
 }
 
 def parseLines(lines: Seq[String]): BigInt = {
@@ -18,6 +18,8 @@ def parseLines(lines: Seq[String]): BigInt = {
       .foreach(p.add(_))
     list.addOne(p)
   }
+
+  list.filter(!_.valid).map(println(_))
 
   val n = list.map(_.calcNext).reduce(_ + _)
 
@@ -35,7 +37,7 @@ def parseLines2(lines: Seq[String]): BigInt = {
     list.addOne(p)
   }
 
-  println(list.length)
+  // println(list.length)
 
   val n = list.map(_.calcPrev).reduce(_ + _)
 
@@ -65,6 +67,14 @@ class Pyramid {
 
   def calcPrev: BigInt = {
     calcPrev(0)
+  }
+
+  def valid: Boolean = {
+    var v: Boolean = true
+    for i <- 1 to layers.length - 1 do {
+      v = v && layers(i).length == layers(i-1).length -1
+    }
+    v
   }
 
   private def calcNext(level: Int): BigInt = {
