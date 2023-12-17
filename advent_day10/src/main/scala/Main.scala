@@ -13,7 +13,15 @@ enum Pipe {
   case V,H,NE,NW,SW,SE,G,S
 }
 
-  case class Node(r: Int, c: Int)
+enum Direction {
+  case R, L
+}
+
+enum Travel {
+  case N, S, E, W
+}
+
+case class Node(r: Int, c: Int)
 
 def parseLines(lines: Seq[String]): BigInt = {
   var map = lines.map(_.toList.map(_ match {
@@ -42,6 +50,8 @@ def parseLines(lines: Seq[String]): BigInt = {
 
   path = calculatePath(path, map) 
 
+  println(calculateInner(path(0), map))
+
   println(path(0).length/2.ceil.toInt)
   0
 }
@@ -53,6 +63,163 @@ def calculatePath(
 
   calculatePath(path,map, 0, path(0)(0).r, path(0)(0).c)
 
+}
+
+def calculateInner(
+  path: ArrayBuffer[Node],
+  map: List[List[Pipe]]
+): Int = {
+  val innerEdge = findEdgeSlide(path, map) match {
+    case Direction.R => Direction.L
+    case Direction.L => Direction.R
+  }
+
+  // println(innerEdge)
+  var ralitive = Travel.N
+  var markedNodes: ArrayBuffer[Node] = ArrayBuffer()
+  for i <- 1 to path.length - 1 do {
+    val prev = path(i-1)
+    val curr = path(i)
+
+    val rDir = prev.r - curr.r
+    val cDir = prev.c - curr.c
+    println(curr)
+    println(map(curr.r)(curr.c))
+    println("rDir: " + rDir)
+    println("cDir: " + cDir)
+
+    if (rDir > 0 && map(curr.r)(curr.c) == Pipe.V) {
+      ralitive = Travel.N
+      val n = if (innerEdge == Direction.L) {
+        Node(curr.r, curr.c-1)
+      }
+      else {
+        Node(curr.r, curr.c+1)
+      }
+      
+      if (!markedNodes.contains(n) && !path.contains(n) && n.r >= 0 && n.r < map.length && n.c >= 0 && n.c < map(n.r).length) {
+        markedNodes.addOne(n)
+      }
+    }
+    else if (rDir < 0 && map(curr.r)(curr.c) == Pipe.V || (map(curr.r)(curr.c) == Pipe.SW || map(curr.r)(curr.c) == Pipe.SE)) {
+      ralitive = Travel.S
+      val n = if (innerEdge == Direction.L) {
+        Node(curr.r, curr.c+1)
+      }
+      else {
+        Node(curr.r, curr.c-1)
+      }
+      if (!markedNodes.contains(n) && !path.contains(n) && n.r >= 0 && n.r < map.length && n.c >= 0 && n.c < map(n.r).length) {
+        markedNodes.addOne(n)
+      }
+    }
+    else if (cDir > 0 && (map(curr.r)(curr.c) == Pipe.H || map(curr.r)(curr.c) == Pipe.NW)) {
+      ralitive = Travel.W
+      val n = if (innerEdge == Direction.L) {
+        Node(curr.r+1, curr.c)
+      }
+      else {
+        Node(curr.r-1, curr.c)
+      }
+      if (!markedNodes.contains(n) && !path.contains(n) && n.r >= 0 && n.r < map.length && n.c >= 0 && n.c < map(n.r).length) {
+        markedNodes.addOne(n)
+      }
+    }
+    else if (cDir < 0 && map(curr.r)(curr.c) == Pipe.H) {
+      ralitive = Travel.E
+      val n = if (innerEdge == Direction.L) {
+        Node(curr.r-1, curr.c)
+      }
+      else {
+        Node(curr.r+1, curr.c)
+      }
+      if (!markedNodes.contains(n) && !path.contains(n) && n.r >= 0 && n.r < map.length && n.c >= 0 && n.c < map(n.r).length) {
+        markedNodes.addOne(n)
+      }
+    }
+    println(ralitive)
+    
+  }
+  
+  markedNodes.length
+}
+
+def findEdgeSlide(path: ArrayBuffer[Node], map: List[List[Pipe]]): Direction = {
+  val temp = path.map(x => map(x.r)(x.c) match {
+    // case Pipe.H => check(lookNorth, lookSouth, x.r, x.c, path, map)
+    // case Pipe.V => check(lookEast, lookWest, x.r, x.c, path, map)
+    case Pipe.NW if (lookEast(x.r, x.c,path,map) || lookSouth(x.r,x.c,path,map)) => Some(Direction.R)
+    case Pipe.NE if (lookWest(x.r, x.c,path,map) || lookSouth(x.r,x.c,path,map)) => Some(Direction.R)
+    case Pipe.SE if (lookWest(x.r, x.c,path,map) || lookNorth(x.r,x.c,path,map)) => Some(Direction.R)
+    case Pipe.SW if (lookEast(x.r, x.c,path,map) || lookNorth(x.r,x.c,path,map)) => Some(Direction.R)
+    case _ => None
+  }).flatMap(x => x)
+
+  if (temp.isEmpty) {
+    Direction.L
+  }
+  else {
+    Direction.R
+  }
+}
+
+def check(
+  f1: (Int, Int, ArrayBuffer[Node], List[List[Pipe]]) => Boolean, 
+  f2: (Int, Int, ArrayBuffer[Node], List[List[Pipe]]) => Boolean, 
+  r: Int,
+  c: Int,
+  path: ArrayBuffer[Node],
+  map: List[List[Pipe]]
+): Option[Direction] = {
+  if (f1(r,c,path,map)) {
+    Some(Direction.R)
+  }
+  else if (f2(r,c,path,map)) {
+    Some(Direction.L)
+  }
+  else {
+    None
+  }
+}
+
+def lookNorth(r: Int, c: Int, path: ArrayBuffer[Node], map: List[List[Pipe]]): Boolean = {
+  var notFound = true
+  for i <- 0 to r - 1 do {
+    if (path.contains(Node(i,c))) {
+      notFound = false
+    }
+  }
+  notFound
+}
+
+def lookSouth(r: Int, c: Int, path: ArrayBuffer[Node], map: List[List[Pipe]]): Boolean = {
+  var notFound = true
+  for i <- r + 1 to map.length - 1 do {
+    if (path.contains(Node(i,c))) {
+      notFound = false
+    }
+  }
+  notFound
+}
+
+def lookEast(r: Int, c: Int, path: ArrayBuffer[Node], map: List[List[Pipe]]): Boolean = {
+  var notFound = true
+  for i <- c + 1 to map(r).length - 1 do {
+    if (path.contains(Node(r,i))) {
+      notFound = false
+    }
+  }
+  notFound
+}
+
+def lookWest(r: Int, c: Int, path: ArrayBuffer[Node], map: List[List[Pipe]]): Boolean = {
+  var notFound = true
+  for i <- 0 to c - 1 do {
+    if (path.contains(Node(r,i))) {
+      notFound = false
+    }
+  }
+  notFound
 }
 
 def calculatePath(
